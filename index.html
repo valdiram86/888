@@ -58,50 +58,6 @@
       border: 1px solid #ddd;
     }
 
-    td[data-score] {
-      font-weight: bold;
-      color: black;
-    }
-
-    td[data-score^="6"],
-    td[data-score="600"],
-    td[data-score="601"],
-    td[data-score="602"],
-    td[data-score="603"],
-    td[data-score="604"],
-    td[data-score="605"],
-    td[data-score="606"],
-    td[data-score="607"],
-    td[data-score="608"],
-    td[data-score="609"] {
-      background: #3399ff;
-      color: white;
-    }
-
-    td[data-score^="5"] {
-      background: #00cc00;
-      color: black;
-    }
-
-    td[data-score^="3"],
-    td[data-score^="4"] {
-      background: #ffff00;
-      color: black;
-    }
-
-    td[data-score^="2"][data-score]:not([data-score^="25"]):not([data-score^="26"]):not([data-score^="27"]):not([data-score^="28"]):not([data-score^="29"]) {
-      background: none !important;
-    }
-
-    td[data-score^="25"],
-    td[data-score^="26"],
-    td[data-score^="27"],
-    td[data-score^="28"],
-    td[data-score^="29"] {
-      background: #ff00ff;
-      color: white;
-    }
-
     .dataTables_filter {
       text-align: center !important;
       margin-bottom: 20px;
@@ -123,7 +79,7 @@
 
   <div id="introText">
     <h3>Sobre o Projeto On-Chain SetValues</h3>
-    <p>O <strong>On-Chain SetValues</strong> é uma plataforma de análise automatizada que monitora mais de 2.000 criptomoedas em tempo real e atribui uma pontuação de 1 a 700 com base em dezenas de critérios objetivos.</p>
+    <p>O <strong>On-Chain SetValues</strong> é uma plataforma de análise automatizada que monitora 2.800 criptomoedas em tempo real e atribui uma pontuação de 1 a 700 com base em dezenas de critérios objetivos.</p>
     <p>O sistema foi desenvolvido para identificar ativos com alto potencial de valorização e alertar sobre riscos de colapso, especialmente em projetos centralizados ou manipulados.</p>
 
     <h4>Como funciona</h4>
@@ -155,6 +111,7 @@
     <table id="tabela" class="display"></table>
   </div>
 
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
@@ -198,8 +155,21 @@
               if (link.startsWith("http")) {
                 $tds.eq(4).html(`<a href="${link}" target="_blank">Abrir</a>`);
               }
-              const score = $tds.eq(5).text();
-              $tds.eq(5).attr("data-score", score);
+
+              const score = parseInt($tds.eq(5).text());
+              if (!isNaN(score)) {
+                if (score >= 600) {
+                  $tds.eq(5).css({ background: "#3399ff", color: "white" });
+                } else if (score >= 500) {
+                  $tds.eq(5).css({ background: "#00cc00", color: "black" });
+                } else if (score >= 300) {
+                  $tds.eq(5).css({ background: "#ffff00", color: "black" });
+                } else if (score >= 250) {
+                  $tds.eq(5).css({ background: "#ff00ff", color: "black" });
+                } else {
+                  $tds.eq(5).css({ background: "", color: "black" });
+                }
+              }
             });
           }, 300);
         })
