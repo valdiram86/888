@@ -1,1 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel de Criptomoedas</title>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
+    .negativo { color: red; }
+    .positivo { color: green; }
+    .destaque { background: #ffeeba; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Painel Cripto - Radar de Desempenho</h1>
+  <table id="painel">
+    <thead>
+      <tr>
+        <th>Cripto</th>
+        <th>24h (%)</th>
+        <th>7d (%)</th>
+        <th>30d (%)</th>
+        <th>Holders</th>
+        <th>Δ Holders</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Conteúdo será preenchido via JS -->
+    </tbody>
+  </table>
 
+  <script src="painel.js"></script>
+</body>
+</html>const API_KEY = 'c4382123-4586-4082-85b2-119603ed1ffd';
+const SYMBOLS = [
+  'AGENDA47', 'CAILA', 'BUILD', 'HOSICO', 'LABUBU',
+  'BULLA', 'TURBO', 'AURA', 'BONK', 'STUPID',
+  'ARENA', 'PDOG', 'STRONGHOLD', 'BNBCARD', 'PENGUINS'
+];
+
+const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${SYMBOLS.join(',')}`;
+
+async function buscarDados() {
+  try {
+    const resposta = await fetch(url, {
+      headers: {
+        'X-CMC_PRO_API_KEY': API_KEY
+      }
+    });
+
+    const dados = await resposta.json();
+    const tbody = document.querySelector('#painel tbody');
+    tbody.innerHTML = '';
+
+    const variacoes = [];
+
+    for (const simbolo of SYMBOLS) {
+      const info = dados.data[simbolo];
+      if (!info) continue;
+
+      const nome = info.name;
+      const percent24h = info.quote.USD.percent_change_24h || 0;
+      const percent7d = info.quote.USD.percent_change_7d || 0;
+      const percent30d = info.quote.USD.percent_change_30d || 0;
+
+      // Simulação de holders
+      const holdersAtuais = Math.floor(Math.random() * 10000) + 1000;
+      const holdersAntes = parseInt(localStorage.getItem(`holders_${simbolo}`)) || holdersAtuais;
+      const deltaHolders = holdersAtuais - holdersAntes;
+
+      localStorage.setItem(`holders_${simbolo}`, holdersAtuais);
+
+      variacoes.push({
+        nome, simbolo, percent24h, percent7d, percent30d, holdersAtuais, deltaHolders
+      });
+    }
+
+    // Destaques
+    const menor24h = variacoes.reduce((a, b) => a.percent24h < b.percent24h ? a : b);
+    const menor7d  = variacoes.reduce((a, b) => a.percent7d  < b.percent7d  ? a : b);
+    const menor30d = variacoes.reduce((a, b) => a.percent30d < b.percent30d ? a : b);
+    const maiorHolders = variacoes.reduce((a, b) => a.deltaHolders > b.deltaHolders ? a : b);
+
+    for (const v of variacoes) {
+      const tr = document.createElement('tr');
+
+      const destaque = (v.simbolo === menor24h.simbolo || v.simbolo === menor7d.simbolo || v.simbolo === menor30d.simbolo || v.simbolo === maiorHolders.simbolo);
+      if (destaque) tr.classList.add('destaque');
+
+      tr.innerHTML = `
+        <td>${v.nome}</td>
+        <td class="${v.percent24h < 0 ? 'negativo' : 'positivo'}">${v.percent24h.toFixed(2)}%</td>
+        <td class="${v.percent7d < 0 ? 'negativo' : 'positivo'}">${v.percent7d.toFixed(2)}%</td>
+        <td class="${v.percent30d < 0 ? 'negativo' : 'positivo'}">${v.percent30d.toFixed(2)}%</td>
+        <td>${v.holdersAtuais.toLocaleString()}</td>
+        <td class="${v.deltaHolders < 0 ? 'negativo' : 'positivo'}">${v.deltaHolders >= 0 ? '+' : ''}${v.deltaHolders}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+  } catch (erro) {
+    console.error('Erro ao buscar dados:', erro);
+  }
+}
+
+buscarDados();
